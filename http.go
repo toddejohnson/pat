@@ -47,8 +47,10 @@ func ListenAndServe(addr string) error {
 	r.HandleFunc("/api/mailbox/out", postMessageHandler).Methods("POST")
 	r.HandleFunc("/api/posreport", postPositionHandler).Methods("POST")
 	r.HandleFunc("/api/status", statusHandler).Methods("GET")
+	r.HandleFunc("/api/config.json", configHandler).Methods("GET", "POST")
 	r.HandleFunc("/ws", consoleHandler)
 	r.HandleFunc("/ui", uiHandler).Methods("GET")
+	r.HandleFunc("/ui/config", uiConfigHandler).Methods("GET")
 	r.HandleFunc("/", rootHandler).Methods("GET")
 
 	http.Handle("/", r)
@@ -318,6 +320,33 @@ func uiHandler(w http.ResponseWriter, r *http.Request) {
 	err = t.Execute(w, tmplData)
 	if err != nil {
 		log.Fatal(err)
+	}
+}
+
+func uiConfigHandler(w http.ResponseWriter, r *http.Request) {
+	data, err := Asset(path.Join("res", "tmpl", "config.html"))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	t := template.New("config.html") //create a new template
+	t, err = t.Parse(string(data))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	tmplData := struct{ AppName, Version, Mycall, Addr string }{AppName, Version, fOptions.MyCall, r.Host}
+
+	err = t.Execute(w, tmplData)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func configHandler(w http.ResponseWriter, req *http.Request) {
+	if req.Method == "GET" {
+		json.NewEncoder(w).Encode(config) //TODO: Consider serving the file
+		return
 	}
 }
 
