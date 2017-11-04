@@ -357,6 +357,17 @@ function postPosition() {
 	});
 }
 
+String.prototype.truncfile = function(n){
+	var ext = this.split('.').pop();
+	if(ext == this || this.length <= n) return this;
+	n-=ext.length;
+	return this.trunc(n) + ext;
+};
+
+String.prototype.trunc = function(n){
+	return this.substr(0,n-1) + (this.length > n ? '&hellip;' : '');
+};
+
 function previewAttachmentFiles() {
 	var files = $(this).get(0).files;
 	attachments = $('#composer_attachments');
@@ -377,12 +388,14 @@ function previewAttachmentFiles() {
 			reader.readAsDataURL(file);
 		} else {
 			attachments.append(
-				'<div class="col-xs-6 col-md-3"><a href="#" class="btn btn-default navbar-btn"><span class="glyphicon glyphicon-paperclip" /> ' +
-				file.name + '<br />(' + file.size + ' bytes)' +
+				'<div class="col-xs-6 col-md-3"><a href="#" class="btn btn-default navbar-btn" data-toggle="tooltip" title="' + file.name + '">' +
+				'<span class="glyphicon glyphicon-paperclip" /> ' +
+				file.name.truncfile(16) + '<br />(' + file.size + ' bytes)' +
 				'</a></div>'
 			);
 		}
 	};
+	$('[data-toggle="tooltip"]').tooltip();
 }
 
 function notify(data)
@@ -677,8 +690,9 @@ function displayMessage(elem) {
 				);
 			} else {
 				attachments.append(
-					'<div class="col-xs-6 col-md-3"><a target="_blank" href="' + msg_url + "/" + file.Name + '" class="btn btn-default navbar-btn"><span class="glyphicon glyphicon-paperclip" /> ' +
-					file.Name + '<br />(' + file.Size + ' bytes)' +
+					'<div class="col-xs-6 col-md-3"><a target="_blank" href="' + msg_url + "/" + file.Name + '" class="btn btn-default navbar-btn" data-toggle="tooltip" title="' + file.Name + '">' +
+					'<span class="glyphicon glyphicon-paperclip" /> ' +
+					file.Name.truncfile(16) + '<br />(' + file.Size + ' bytes)' +
 					'</a></div>'
 				);
 			}
